@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Corn">
+<meta name="theme-color" content="#FFB347">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Corn</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Bowlby+One&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --sun: #FFB347;
+    --sky: #6FC5FF;
+    --grass: #8FD89B;
+    --berry: #FF6B9D;
+    --grape: #B084EE;
+    --cream: #FFF8E7;
+    --ink: #2C2543;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    font-family: 'Fredoka', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:
+      radial-gradient(circle at 20% 10%, #FFE5B4 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, #C9F0D4 0%, transparent 40%),
+      var(--cream);
+  }
+
+  #app { height: 100%; display: flex; flex-direction: column; position: relative; }
+
+  /* ============ HOME SCREEN ============ */
+  .home {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    overflow-y: auto;
+  }
+
+  .title {
+    font-family: 'Bowlby One', sans-serif;
+    font-size: 48px;
+    text-align: center;
+    margin: 20px 0 8px;
+    background: linear-gradient(135deg, var(--berry), var(--sun), var(--grape));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -1px;
+  }
+
+  .subtitle { text-align: center; font-size: 18px; color: #7B6F94; margin-bottom: 32px; }
+
+  .tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-bottom: 20px;
+  }
+
+  .tile {
+    aspect-ratio: 1;
+    border-radius: 28px;
+    border: 4px solid var(--ink);
+    box-shadow: 0 6px 0 var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    padding: 12px;
+  }
+
+  .tile:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .tile-1 { background: var(--berry); }
+  .tile-2 { background: var(--sky); }
+  .tile-3 { background: var(--sun); }
+  .tile-4 { background: var(--grape); }
+
+  .tile-emoji { font-size: 56px; line-height: 1; }
+  .tile-label { font-size: 20px; font-weight: 700; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+
+  /* ============ SCREEN ============ */
+  .screen {
+    position: absolute;
+    inset: 0;
+    background: var(--cream);
+    display: none;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .screen.active { display: flex; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--cream);
+  }
+
+  .back-btn, .action-btn {
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .action-btn { background: var(--berry); }
+
+  .screen-title {
+    font-family: 'Bowlby One', sans-serif;
+    font-size: 22px;
+    color: var(--ink);
+  }
+
+  .screen-body { flex: 1; overflow-y: auto; padding: 8px 16px 20px; }
+
+  /* ============ MEMORY GAME ============ */
+  .memory-grid {
+    display: grid;
+    gap: 10px;
+    padding: 8px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .memory-card {
+    aspect-ratio: 1;
+    border-radius: 18px;
+    border: 3px solid var(--ink);
+    background: var(--grape);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(28px, 9vw, 48px);
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--ink);
+    transition: transform 0.2s;
+    color: transparent;
+  }
+
+  .memory-card.flipped { background: var(--cream); color: var(--ink); transform: rotateY(180deg) scale(1); }
+  .memory-card.matched { background: var(--grass); color: var(--ink); animation: pop 0.4s; }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15) rotate(-5deg); }
+    100% { transform: scale(1); }
+  }
+
+  .game-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px;
+    margin: 8px 16px;
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  /* ============ VIDEOS ============ */
+  .video-list { display: flex; flex-direction: column; gap: 12px; }
+  .video-item {
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--ink);
+  }
+  .video-item:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .video-thumb {
+    width: 80px; height: 60px; border-radius: 12px; background: #ddd;
+    background-size: cover; background-position: center; flex-shrink: 0;
+    border: 2px solid var(--ink);
+  }
+  .video-title { font-weight: 600; font-size: 16px; }
+
+  .video-player {
+    position: fixed; inset: 0; background: black; z-index: 100;
+    display: none; flex-direction: column;
+  }
+  .video-player.active { display: flex; }
+  .video-player iframe { flex: 1; width: 100%; border: none; }
+  .video-close {
+    position: absolute; top: env(safe-area-inset-top, 20px); right: 20px;
+    background: rgba(0,0,0,0.7); color: white; border: 2px solid white;
+    border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; z-index: 101;
+  }
+
+  .offline-warning {
+    background: var(--sun); border: 3px solid var(--ink); border-radius: 16px;
+    padding: 14px; margin-bottom: 16px; font-weight: 600; text-align: center;
+  }
+
+  /* ============ PUZZLE ============ */
+  .puzzle-board {
+    width: min(90vw, 400px);
+    aspect-ratio: 1;
+    margin: 16px auto;
+    display: grid;
+    border: 4px solid var(--ink);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--ink);
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .puzzle-piece {
+    background-size: cover;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .puzzle-piece.empty { background: var(--cream) !important; cursor: default; }
+
+  .puzzle-controls {
+    display: flex; gap: 10px; justify-content: center; margin: 16px;
+    flex-wrap: wrap;
+  }
+
+  .difficulty-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .diff-btn {
+    background: white; border: 3px solid var(--ink); border-radius: 50px;
+    padding: 8px 16px; font-family: inherit; font-weight: 600; cursor: pointer;
+  }
+  .diff-btn.active { background: var(--berry); color: white; }
+
+  .photo-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .photo-item {
+    aspect-ratio: 1; border-radius: 16px; border: 3px solid var(--ink);
+    background-size: cover; background-position: center; cursor: pointer;
+    box-shadow: 0 4px 0 var(--ink); position: relative;
+  }
+  .photo-delete {
+    position: absolute; top: 4px; right: 4px; background: var(--berry);
+    color: white; border: 2px solid var(--ink); border-radius: 50%;
+    width: 32px; height: 32px; font-size: 16px; cursor: pointer;
+  }
+  .add-photo {
+    aspect-ratio: 1; border-radius: 16px; border: 3px dashed var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; cursor: pointer; background: rgba(255,255,255,0.5);
+  }
+
+  .win-message {
+    text-align: center; font-family: 'Bowlby One', sans-serif;
+    font-size: 32px; color: var(--berry); margin: 20px;
+    animation: pop 0.6s;
+  }
+
+  /* ============ TAP GAME ============ */
+  .tap-arena {
+    flex: 1; position: relative; overflow: hidden;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--grass) 100%);
+    border-radius: 20px;
+    margin: 8px 16px;
+  }
+  .tap-target {
+    position: absolute; width: 70px; height: 70px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 50px; cursor: pointer;
+    animation: bounce-in 0.3s;
+  }
+  @keyframes bounce-in {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .tap-score {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--ink); color: var(--cream);
+    padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 18px;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div class="home" id="home">
+    <h1 class="title">Corn!</h1>
+    <p class="subtitle">Pick something to play 🎉</p>
+    <div class="tile-grid">
+      <div class="tile tile-1" onclick="showScreen('memory')">
+        <div class="tile-emoji">🧠</div>
+        <div class="tile-label">Memory</div>
+      </div>
+      <div class="tile tile-2" onclick="showScreen('puzzle')">
+        <div class="tile-emoji">🧩</div>
+        <div class="tile-label">Puzzles</div>
+      </div>
+      <div class="tile tile-3" onclick="showScreen('tap')">
+        <div class="tile-emoji">🎯</div>
+        <div class="tile-label">Tap Game</div>
+      </div>
+      <div class="tile tile-4" onclick="showScreen('videos')">
+        <div class="tile-emoji">📺</div>
+        <div class="tile-label">Videos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY -->
+  <div class="screen" id="screen-memory">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← Home</button>
+      <div class="screen-title">Memory Match</div>
+      <button class="action-btn" onclick="newMemoryGame()">↻ New</button>
+    </div>
+    <div class="game-stats">
+      <span>Moves: <span id="memory-moves">0</span></span>
+      <span>Matches: <span id="memory-matches">0</span>/<span id="memory-total">0</span></span>
+    </div>
+    <div class="screen-body">
+      <div class="memory-grid" id="memory-grid"></div>
+      <div id="memory-win"></div>
+    </div>
+  </div>
+
+  <!-- PUZZLE -->
+  <div class="screen" id="screen-puzzle">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← Home</button>
+      <div class="screen-title">Photo Puzzles</div>
+      <button class="action-btn" onclick="addPhoto()">+ Photo</button>
+    </div>
+    <div class="screen-body">
+      <div id="puzzle-picker">
+        <p style="text-align:center; margin: 12px;">Pick a picture to make a puzzle:</p>
+        <div class="photo-list" id="photo-list"></div>
+      </div>
+      <div id="puzzle-game" style="display:none;">
+        <div class="difficulty-btns">
+          <button class="diff-btn" data-size="3" onclick="setDifficulty(3)">Easy 3×3</button>
+          <button class="diff-btn active" data-size="4" onclick="setDifficulty(4)">Medium 4×4</button>
+          <button class="diff-btn" data-size="5" onclick="setDifficulty(5)">Hard 5×5</button>
+        </div>
+        <div class="puzzle-board" id="puzzle-board"></div>
+        <div class="puzzle-controls">
+          <button class="action-btn" onclick="shufflePuzzle()">🔀 Shuffle</button>
+          <button class="back-btn" onclick="backToPhotoPicker()">← Pictures</button>
+        </div>
+        <div id="puzzle-win"></div>
+      </div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+  </div>
+
+  <!-- TAP GAME -->
+  <div class="screen" id="screen-tap">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← Home</button>
+      <div class="screen-title">Tap the Animals!</div>
+      <button class="action-btn" onclick="startTapGame()">↻ Start</button>
+    </div>
+    <div class="tap-arena" id="tap-arena">
+      <div class="tap-score">Score: <span id="tap-score">0</span></div>
+    </div>
+  </div>
+
+  <!-- VIDEOS -->
+  <div class="screen" id="screen-videos">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← Home</button>
+      <div class="screen-title">Videos</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="screen-body">
+      <div class="offline-warning" id="offline-warning" style="display:none;">
+        📡 No internet — videos need a connection. Try a game instead!
+      </div>
+      <div class="video-list" id="video-list"></div>
+    </div>
+  </div>
+
+  <!-- VIDEO PLAYER -->
+  <div class="video-player" id="video-player">
+    <button class="video-close" onclick="closeVideo()">✕</button>
+    <iframe id="video-frame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   EDIT THIS: Add the YouTube videos you want available
+   Find the video ID in the URL: youtube.com/watch?v=VIDEO_ID
+   ============================================================ */
+const VIDEOS = [
+  { id: 'D1ULRHX-_2g', title: 'Baby Shark Dance' },
+  { id: '786BzlzSpMw', title: 'The Wheels on the Bus' },
+  { id: 'XqZsoesa55w', title: 'Baby Shark (Pinkfong)' },
+  // Add more: { id: 'YOUTUBE_VIDEO_ID', title: 'My Title' },
+];
+
+/* ============ NAVIGATION ============ */
+function showScreen(name) {
+  document.getElementById('home').style.display = 'none';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'memory') newMemoryGame();
+  if (name === 'videos') loadVideos();
+  if (name === 'puzzle') loadPhotos();
+  if (name === 'tap') startTapGame();
+}
+function goHome() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('home').style.display = 'flex';
+  stopTapGame();
+}
+
+/* ============ MEMORY GAME ============ */
+const MEMORY_EMOJIS = ['🐶','🐱','🦊','🐼','🦁','🐸','🐙','🦄','🐝','🦖','🐢','🦋'];
+let memState = {};
+
+function newMemoryGame() {
+  const pairs = 8;
+  const picks = [...MEMORY_EMOJIS].sort(() => Math.random()-0.5).slice(0, pairs);
+  const cards = [...picks, ...picks].sort(() => Math.random()-0.5);
+  memState = { cards, flipped: [], matched: new Set(), moves: 0, locked: false };
+  document.getElementById('memory-total').textContent = pairs;
+  document.getElementById('memory-matches').textContent = 0;
+  document.getElementById('memory-moves').textContent = 0;
+  document.getElementById('memory-win').innerHTML = '';
+  const grid = document.getElementById('memory-grid');
+  grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+  grid.innerHTML = '';
+  cards.forEach((emoji, i) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.textContent = emoji;
+    card.onclick = () => flipCard(i, card);
+    grid.appendChild(card);
+  });
+}
+
+function flipCard(idx, el) {
+  if (memState.locked || memState.flipped.includes(idx) || memState.matched.has(idx)) return;
+  el.classList.add('flipped');
+  memState.flipped.push(idx);
+
+  if (memState.flipped.length === 2) {
+    memState.moves++;
+    document.getElementById('memory-moves').textContent = memState.moves;
+    memState.locked = true;
+    const [a, b] = memState.flipped;
+    const cards = document.querySelectorAll('.memory-card');
+    if (memState.cards[a] === memState.cards[b]) {
+      setTimeout(() => {
+        cards[a].classList.add('matched');
+        cards[b].classList.add('matched');
+        memState.matched.add(a); memState.matched.add(b);
+        memState.flipped = [];
+        memState.locked = false;
+        document.getElementById('memory-matches').textContent = memState.matched.size / 2;
+        if (memState.matched.size === memState.cards.length) {
+          document.getElementById('memory-win').innerHTML = '<div class="win-message">🎉 You Win! 🎉</div>';
+        }
+      }, 400);
+    } else {
+      setTimeout(() => {
+        cards[a].classList.remove('flipped');
+        cards[b].classList.remove('flipped');
+        memState.flipped = [];
+        memState.locked = false;
+      }, 900);
+    }
+  }
+}
+
+/* ============ VIDEOS ============ */
+function loadVideos() {
+  const list = document.getElementById('video-list');
+  list.innerHTML = '';
+  document.getElementById('offline-warning').style.display = navigator.onLine ? 'none' : 'block';
+  VIDEOS.forEach(v => {
+    const item = document.createElement('div');
+    item.className = 'video-item';
+    item.onclick = () => playVideo(v.id);
+    item.innerHTML = `
+      <div class="video-thumb" style="background-image:url(https://img.youtube.com/vi/${v.id}/mqdefault.jpg)"></div>
+      <div class="video-title">${v.title}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+function playVideo(id) {
+  document.getElementById('video-frame').src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
+  document.getElementById('video-player').classList.add('active');
+}
+function closeVideo() {
+  document.getElementById('video-frame').src = '';
+  document.getElementById('video-player').classList.remove('active');
+}
+window.addEventListener('online', loadVideos);
+window.addEventListener('offline', loadVideos);
+
+/* ============ PHOTOS + PUZZLE (IndexedDB for offline storage) ============ */
+let db;
+const dbReq = indexedDB.open('kidsApp', 1);
+dbReq.onupgradeneeded = e => {
+  e.target.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+};
+dbReq.onsuccess = e => { db = e.target.result; };
+
+function loadPhotos() {
+  document.getElementById('puzzle-picker').style.display = 'block';
+  document.getElementById('puzzle-game').style.display = 'none';
+  if (!db) { setTimeout(loadPhotos, 100); return; }
+  const tx = db.transaction('photos', 'readonly');
+  const req = tx.objectStore('photos').getAll();
+  req.onsuccess = () => {
+    const list = document.getElementById('photo-list');
+    list.innerHTML = '';
+    // Built-in default puzzles (emoji canvases)
+    const defaults = [
+      { id: 'd1', dataUrl: makeDefaultImage('🌈', '#FFE5B4'), isDefault: true },
+      { id: 'd2', dataUrl: makeDefaultImage('🦕', '#C9F0D4'), isDefault: true },
+      { id: 'd3', dataUrl: makeDefaultImage('🚀', '#B084EE'), isDefault: true },
+    ];
+    [...defaults, ...req.result].forEach(photo => {
+      const tile = document.createElement('div');
+      tile.className = 'photo-item';
+      tile.style.backgroundImage = `url(${photo.dataUrl})`;
+      tile.onclick = () => startPuzzle(photo.dataUrl);
+      if (!photo.isDefault) {
+        const del = document.createElement('button');
+        del.className = 'photo-delete';
+        del.textContent = '×';
+        del.onclick = (e) => { e.stopPropagation(); deletePhoto(photo.id); };
+        tile.appendChild(del);
+      }
+      list.appendChild(tile);
+    });
+    const add = document.createElement('div');
+    add.className = 'add-photo';
+    add.textContent = '+';
+    add.onclick = addPhoto;
+    list.appendChild(add);
+  };
+}
+
+function makeDefaultImage(emoji, bg) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 300;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 300, 300);
+  ctx.font = '180px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, 150, 160);
+  return c.toDataURL();
+}
+
+function addPhoto() { document.getElementById('photo-input').click(); }
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    // Resize to keep storage reasonable
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 600;
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // Crop to square center
+      const scale = size / Math.min(img.width, img.height);
+      const sw = img.width * scale, sh = img.height * scale;
+      ctx.drawImage(img, (size-sw)/2, (size-sh)/2, sw, sh);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').add({ dataUrl });
+      tx.oncomplete = () => loadPhotos();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function deletePhoto(id) {
+  if (!confirm('Delete this picture?')) return;
+  const tx = db.transaction('photos', 'readwrite');
+  tx.objectStore('photos').delete(id);
+  tx.oncomplete = () => loadPhotos();
+}
+
+let puzzleState = { size: 4, image: null, tiles: [], emptyIdx: 0 };
+
+function startPuzzle(dataUrl) {
+  puzzleState.image = dataUrl;
+  document.getElementById('puzzle-picker').style.display = 'none';
+  document.getElementById('puzzle-game').style.display = 'block';
+  buildPuzzle();
+}
+
+function backToPhotoPicker() {
+  document.getElementById('puzzle-game').style.display = 'none';
+  document.getElementById('puzzle-picker').style.display = 'block';
+  document.getElementById('puzzle-win').innerHTML = '';
+}
+
+function setDifficulty(n) {
+  puzzleState.size = n;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', +b.dataset.size === n));
+  buildPuzzle();
+}
+
+function buildPuzzle() {
+  const n = puzzleState.size;
+  const board = document.getElementById('puzzle-board');
+  board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  puzzleState.tiles = Array.from({length: n*n}, (_, i) => i);
+  puzzleState.emptyIdx = n*n - 1;
+  shufflePuzzle();
+}
+
+function renderPuzzle() {
+  const n = puzzleState.size;
+  const board = document.getElementById('puzzle-board');
+  board.innerHTML = '';
+  puzzleState.tiles.forEach((tileVal, pos) => {
+    const piece = document.createElement('div');
+    piece.className = 'puzzle-piece';
+    if (tileVal === n*n - 1) {
+      piece.classList.add('empty');
+    } else {
+      const row = Math.floor(tileVal / n);
+      const col = tileVal % n;
+      piece.style.backgroundImage = `url(${puzzleState.image})`;
+      piece.style.backgroundSize = `${n*100}% ${n*100}%`;
+      piece.style.backgroundPosition = `${(col/(n-1))*100}% ${(row/(n-1))*100}%`;
+      piece.onclick = () => movePiece(pos);
+    }
+    board.appendChild(piece);
+  });
+}
+
+function movePiece(pos) {
+  const n = puzzleState.size;
+  const empty = puzzleState.emptyIdx;
+  const er = Math.floor(empty/n), ec = empty%n;
+  const pr = Math.floor(pos/n), pc = pos%n;
+  if ((Math.abs(er-pr) === 1 && ec === pc) || (Math.abs(ec-pc) === 1 && er === pr)) {
+    [puzzleState.tiles[empty], puzzleState.tiles[pos]] = [puzzleState.tiles[pos], puzzleState.tiles[empty]];
+    puzzleState.emptyIdx = pos;
+    renderPuzzle();
+    checkPuzzleWin();
+  }
+}
+
+function checkPuzzleWin() {
+  if (puzzleState.tiles.every((v, i) => v === i)) {
+    document.getElementById('puzzle-win').innerHTML = '<div class="win-message">🎉 Solved! 🎉</div>';
+  }
+}
+
+function shufflePuzzle() {
+  document.getElementById('puzzle-win').innerHTML = '';
+  const n = puzzleState.size;
+  // Do random valid moves to guarantee solvable
+  for (let i = 0; i < n*n*20; i++) {
+    const empty = puzzleState.emptyIdx;
+    const er = Math.floor(empty/n), ec = empty%n;
+    const moves = [];
+    if (er > 0) moves.push(empty - n);
+    if (er < n-1) moves.push(empty + n);
+    if (ec > 0) moves.push(empty - 1);
+    if (ec < n-1) moves.push(empty + 1);
+    const next = moves[Math.floor(Math.random()*moves.length)];
+    [puzzleState.tiles[empty], puzzleState.tiles[next]] = [puzzleState.tiles[next], puzzleState.tiles[empty]];
+    puzzleState.emptyIdx = next;
+  }
+  renderPuzzle();
+}
+
+/* ============ TAP GAME ============ */
+const TAP_EMOJIS = ['🐰','🐭','🐹','🐶','🐱','🐸','🐵','🐧','🦆','🐢'];
+let tapState = { score: 0, timer: null, spawnTimer: null };
+
+function startTapGame() {
+  stopTapGame();
+  tapState.score = 0;
+  document.getElementById('tap-score').textContent = 0;
+  const arena = document.getElementById('tap-arena');
+  arena.querySelectorAll('.tap-target').forEach(t => t.remove());
+  spawnTapTarget();
+  tapState.spawnTimer = setInterval(spawnTapTarget, 900);
+}
+
+function stopTapGame() {
+  if (tapState.spawnTimer) clearInterval(tapState.spawnTimer);
+  tapState.spawnTimer = null;
+}
+
+function spawnTapTarget() {
+  const arena = document.getElementById('tap-arena');
+  if (!arena.offsetWidth) return;
+  const target = document.createElement('div');
+  target.className = 'tap-target';
+  target.textContent = TAP_EMOJIS[Math.floor(Math.random()*TAP_EMOJIS.length)];
+  const x = Math.random() * (arena.offsetWidth - 70);
+  const y = Math.random() * (arena.offsetHeight - 70);
+  target.style.left = x + 'px';
+  target.style.top = y + 'px';
+  target.onclick = () => {
+    tapState.score++;
+    document.getElementById('tap-score').textContent = tapState.score;
+    target.remove();
+  };
+  arena.appendChild(target);
+  setTimeout(() => target.remove(), 2000);
+}
+
+/* ============ SERVICE WORKER (offline) ============ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
