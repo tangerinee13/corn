@@ -225,32 +225,109 @@
   }
 
   /* ============ PUZZLE ============ */
+  .puzzle-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
   .puzzle-board {
-    width: min(90vw, 400px);
+    width: min(85vw, 380px);
     aspect-ratio: 1;
-    margin: 16px auto;
     display: grid;
     border: 4px solid var(--ink);
     border-radius: 16px;
-    overflow: hidden;
-    background: var(--ink);
-    gap: 2px;
-    padding: 2px;
+    background: var(--cream);
+    gap: 0;
+    padding: 0;
+    position: relative;
+    box-shadow: 0 4px 0 var(--ink);
+  }
+
+  .puzzle-slot {
+    position: relative;
+    border: 1px dashed rgba(44, 37, 67, 0.25);
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  .puzzle-slot.hover {
+    background: rgba(255, 179, 71, 0.4);
+    border: 2px solid var(--sun);
   }
 
   .puzzle-piece {
     background-size: cover;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    cursor: grab;
+    border-radius: 6px;
+    border: 2px solid var(--ink);
+    box-shadow: 0 2px 0 var(--ink);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: box-shadow 0.15s, transform 0.15s;
   }
-  .puzzle-piece.empty { background: var(--cream) !important; cursor: default; }
+
+  .puzzle-piece.placed {
+    border: 1px solid rgba(44, 37, 67, 0.3);
+    border-radius: 0;
+    box-shadow: none;
+    cursor: grab;
+  }
+
+  .puzzle-piece.placed.correct {
+    cursor: default;
+    border-color: transparent;
+  }
+
+  .puzzle-piece.dragging {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    transform: scale(1.05);
+    z-index: 1000;
+    cursor: grabbing;
+  }
+
+  .puzzle-tray {
+    width: min(90vw, 420px);
+    min-height: 100px;
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 0 var(--ink);
+  }
+
+  .puzzle-tray .puzzle-piece {
+    width: 60px;
+    height: 60px;
+  }
+
+  .puzzle-preview {
+    width: 80px; height: 80px;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 3px 0 var(--ink);
+  }
+
+  .puzzle-header {
+    display: flex; align-items: center; gap: 14px;
+    justify-content: center; margin: 8px 0;
+  }
+  .puzzle-header-text { font-weight: 600; }
 
   .puzzle-controls {
-    display: flex; gap: 10px; justify-content: center; margin: 16px;
+    display: flex; gap: 10px; justify-content: center; margin: 8px 0 16px;
     flex-wrap: wrap;
   }
 
-  .difficulty-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .difficulty-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
   .diff-btn {
     background: white; border: 3px solid var(--ink); border-radius: 50px;
     padding: 8px 16px; font-family: inherit; font-weight: 600; cursor: pointer;
@@ -304,6 +381,69 @@
     padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 18px;
     z-index: 10;
   }
+  .tap-best {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--berry); color: white;
+    padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 14px;
+    z-index: 10;
+  }
+  .tap-timer-wrap {
+    position: absolute; bottom: 16px; left: 16px; right: 16px;
+    height: 14px; background: rgba(0,0,0,0.2);
+    border: 2px solid var(--ink); border-radius: 50px;
+    overflow: hidden; z-index: 10;
+  }
+  .tap-timer-bar {
+    height: 100%; background: linear-gradient(90deg, var(--grass), var(--sun), var(--berry));
+    width: 100%; transition: width 0.1s linear;
+  }
+  .tap-overlay {
+    position: absolute; inset: 0;
+    background: rgba(44, 37, 67, 0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 20; padding: 20px;
+    text-align: center;
+  }
+  .tap-overlay h2 {
+    font-family: 'Bowlby One', sans-serif;
+    font-size: 40px; color: var(--sun); margin-bottom: 8px;
+  }
+  .tap-overlay .final-score {
+    font-size: 24px; color: white; margin-bottom: 24px;
+  }
+  .tap-overlay .new-high {
+    background: var(--berry); color: white; padding: 8px 16px;
+    border-radius: 50px; font-weight: 700; margin-bottom: 16px;
+    animation: pop 0.5s;
+  }
+  .name-input {
+    background: white; border: 3px solid var(--ink);
+    border-radius: 50px; padding: 10px 18px;
+    font-family: inherit; font-size: 18px; text-align: center;
+    width: 200px; margin-bottom: 12px;
+  }
+  .leaderboard {
+    background: white; border: 3px solid var(--ink);
+    border-radius: 20px; padding: 16px;
+    width: 100%; max-width: 320px; margin-bottom: 20px;
+  }
+  .leaderboard h3 {
+    font-family: 'Bowlby One', sans-serif;
+    font-size: 20px; text-align: center; margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .leaderboard-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px dashed #ddd;
+    font-weight: 600;
+  }
+  .leaderboard-row:last-child { border-bottom: none; }
+  .leaderboard-row.you { color: var(--berry); }
+  .leaderboard-rank { width: 30px; }
+  .leaderboard-name { flex: 1; text-align: left; padding: 0 8px; }
+  .leaderboard-score { width: 50px; text-align: right; }
+  .tap-overlay-btns { display: flex; gap: 10px; }
 </style>
 </head>
 <body>
@@ -368,9 +508,16 @@
           <button class="diff-btn active" data-size="4" onclick="setDifficulty(4)">Medium 4×4</button>
           <button class="diff-btn" data-size="5" onclick="setDifficulty(5)">Hard 5×5</button>
         </div>
-        <div class="puzzle-board" id="puzzle-board"></div>
+        <div class="puzzle-header">
+          <div class="puzzle-preview" id="puzzle-preview"></div>
+          <div class="puzzle-header-text">Drag pieces<br>onto the board</div>
+        </div>
+        <div class="puzzle-area">
+          <div class="puzzle-board" id="puzzle-board"></div>
+          <div class="puzzle-tray" id="puzzle-tray"></div>
+        </div>
         <div class="puzzle-controls">
-          <button class="action-btn" onclick="shufflePuzzle()">🔀 Shuffle</button>
+          <button class="action-btn" onclick="shufflePuzzle()">🔀 Reset</button>
           <button class="back-btn" onclick="backToPhotoPicker()">← Pictures</button>
         </div>
         <div id="puzzle-win"></div>
@@ -383,11 +530,24 @@
   <div class="screen" id="screen-tap">
     <div class="topbar">
       <button class="back-btn" onclick="goHome()">← Home</button>
-      <div class="screen-title">Tap the Animals!</div>
+      <div class="screen-title">Tap Fast!</div>
       <button class="action-btn" onclick="startTapGame()">↻ Start</button>
     </div>
     <div class="tap-arena" id="tap-arena">
       <div class="tap-score">Score: <span id="tap-score">0</span></div>
+      <div class="tap-best">Best: <span id="tap-best">0</span></div>
+      <div class="tap-timer-wrap"><div class="tap-timer-bar" id="tap-timer-bar"></div></div>
+      <div class="tap-overlay" id="tap-overlay">
+        <h2 id="tap-overlay-title">Ready?</h2>
+        <div class="final-score" id="tap-final-score">Tap a fruit before time runs out!</div>
+        <div id="tap-new-high" class="new-high" style="display:none">🏆 New High Score!</div>
+        <input type="text" id="tap-name-input" class="name-input" placeholder="Your name" maxlength="12" style="display:none">
+        <div class="leaderboard" id="tap-leaderboard" style="display:none"></div>
+        <div class="tap-overlay-btns">
+          <button class="action-btn" id="tap-save-btn" onclick="saveTapScore()" style="display:none">Save Score</button>
+          <button class="action-btn" onclick="startTapGame()">Play</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -434,7 +594,7 @@ function showScreen(name) {
   if (name === 'memory') newMemoryGame();
   if (name === 'videos') loadVideos();
   if (name === 'puzzle') loadPhotos();
-  if (name === 'tap') startTapGame();
+  if (name === 'tap') showTapReady();
 }
 function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -443,7 +603,7 @@ function goHome() {
 }
 
 /* ============ MEMORY GAME ============ */
-const MEMORY_EMOJIS = ['🐶','🐱','🦊','🐼','🦁','🐸','🐙','🦄','🐝','🦖','🐢','🦋'];
+const MEMORY_EMOJIS = ['🍎','🍌','🍓','🍊','🍇','🍉','🍑','🥕','🌽','🥦','🍅','🍍','🥝','🥑','🫐','🥔'];
 let memState = {};
 
 function newMemoryGame() {
@@ -622,12 +782,20 @@ function deletePhoto(id) {
   tx.oncomplete = () => loadPhotos();
 }
 
-let puzzleState = { size: 4, image: null, tiles: [], emptyIdx: 0 };
+// Drag-and-drop puzzle: pieces start in tray, get dragged onto board slots
+let puzzleState = {
+  size: 4,
+  image: null,
+  placements: [], // length = n*n, value is pieceId or null
+  trayPieces: [], // array of pieceIds currently in tray
+  drag: null
+};
 
 function startPuzzle(dataUrl) {
   puzzleState.image = dataUrl;
   document.getElementById('puzzle-picker').style.display = 'none';
   document.getElementById('puzzle-game').style.display = 'block';
+  document.getElementById('puzzle-preview').style.backgroundImage = `url(${dataUrl})`;
   buildPuzzle();
 }
 
@@ -645,108 +813,372 @@ function setDifficulty(n) {
 
 function buildPuzzle() {
   const n = puzzleState.size;
-  const board = document.getElementById('puzzle-board');
-  board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-  puzzleState.tiles = Array.from({length: n*n}, (_, i) => i);
-  puzzleState.emptyIdx = n*n - 1;
-  shufflePuzzle();
+  puzzleState.placements = new Array(n * n).fill(null);
+  // All pieces start in tray, shuffled
+  puzzleState.trayPieces = Array.from({ length: n * n }, (_, i) => i);
+  for (let i = puzzleState.trayPieces.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [puzzleState.trayPieces[i], puzzleState.trayPieces[j]] = [puzzleState.trayPieces[j], puzzleState.trayPieces[i]];
+  }
+  document.getElementById('puzzle-win').innerHTML = '';
+  renderPuzzle();
+}
+
+function shufflePuzzle() {
+  buildPuzzle();
+}
+
+function pieceBackground(pieceId) {
+  const n = puzzleState.size;
+  const row = Math.floor(pieceId / n);
+  const col = pieceId % n;
+  return {
+    backgroundImage: `url(${puzzleState.image})`,
+    backgroundSize: `${n * 100}% ${n * 100}%`,
+    backgroundPosition: `${(col / (n - 1)) * 100}% ${(row / (n - 1)) * 100}%`,
+  };
 }
 
 function renderPuzzle() {
   const n = puzzleState.size;
   const board = document.getElementById('puzzle-board');
+  const tray = document.getElementById('puzzle-tray');
+
+  // Board slots
+  board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
   board.innerHTML = '';
-  puzzleState.tiles.forEach((tileVal, pos) => {
-    const piece = document.createElement('div');
-    piece.className = 'puzzle-piece';
-    if (tileVal === n*n - 1) {
-      piece.classList.add('empty');
-    } else {
-      const row = Math.floor(tileVal / n);
-      const col = tileVal % n;
-      piece.style.backgroundImage = `url(${puzzleState.image})`;
-      piece.style.backgroundSize = `${n*100}% ${n*100}%`;
-      piece.style.backgroundPosition = `${(col/(n-1))*100}% ${(row/(n-1))*100}%`;
-      piece.onclick = () => movePiece(pos);
+  for (let i = 0; i < n * n; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'puzzle-slot';
+    slot.dataset.slotIdx = i;
+    const pieceId = puzzleState.placements[i];
+    if (pieceId !== null) {
+      const piece = makePieceEl(pieceId, true, i);
+      slot.appendChild(piece);
     }
-    board.appendChild(piece);
-  });
+    board.appendChild(slot);
+  }
+
+  // Tray pieces
+  tray.innerHTML = '';
+  if (puzzleState.trayPieces.length === 0) {
+    tray.innerHTML = '<div style="color:#999;font-style:italic">All pieces placed!</div>';
+  } else {
+    puzzleState.trayPieces.forEach(pieceId => {
+      tray.appendChild(makePieceEl(pieceId, false, null));
+    });
+  }
 }
 
-function movePiece(pos) {
-  const n = puzzleState.size;
-  const empty = puzzleState.emptyIdx;
-  const er = Math.floor(empty/n), ec = empty%n;
-  const pr = Math.floor(pos/n), pc = pos%n;
-  if ((Math.abs(er-pr) === 1 && ec === pc) || (Math.abs(ec-pc) === 1 && er === pr)) {
-    [puzzleState.tiles[empty], puzzleState.tiles[pos]] = [puzzleState.tiles[pos], puzzleState.tiles[empty]];
-    puzzleState.emptyIdx = pos;
-    renderPuzzle();
-    checkPuzzleWin();
+function makePieceEl(pieceId, placed, slotIdx) {
+  const el = document.createElement('div');
+  el.className = 'puzzle-piece' + (placed ? ' placed' : '');
+  el.dataset.pieceId = pieceId;
+  if (placed) {
+    el.dataset.fromSlot = slotIdx;
+    // Fill the slot completely
+    el.style.width = '100%';
+    el.style.height = '100%';
   }
+  Object.assign(el.style, pieceBackground(pieceId));
+  el.addEventListener('pointerdown', onPiecePointerDown);
+  return el;
+}
+
+function onPiecePointerDown(e) {
+  e.preventDefault();
+  const el = e.currentTarget;
+  const pieceId = +el.dataset.pieceId;
+  const fromSlot = el.dataset.fromSlot !== undefined ? +el.dataset.fromSlot : null;
+
+  const rect = el.getBoundingClientRect();
+  const offsetX = e.clientX - rect.left;
+  const offsetY = e.clientY - rect.top;
+
+  // Create floating clone for dragging
+  const ghost = el.cloneNode(true);
+  ghost.classList.add('dragging');
+  ghost.style.position = 'fixed';
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  ghost.style.left = rect.left + 'px';
+  ghost.style.top = rect.top + 'px';
+  ghost.style.pointerEvents = 'none';
+  document.body.appendChild(ghost);
+
+  el.style.opacity = '0.3';
+
+  puzzleState.drag = { pieceId, fromSlot, ghost, offsetX, offsetY, origEl: el };
+
+  document.addEventListener('pointermove', onPiecePointerMove);
+  document.addEventListener('pointerup', onPiecePointerUp);
+  document.addEventListener('pointercancel', onPiecePointerUp);
+}
+
+function onPiecePointerMove(e) {
+  const d = puzzleState.drag;
+  if (!d) return;
+  d.ghost.style.left = (e.clientX - d.offsetX) + 'px';
+  d.ghost.style.top = (e.clientY - d.offsetY) + 'px';
+
+  // Highlight hovered slot
+  document.querySelectorAll('.puzzle-slot.hover').forEach(s => s.classList.remove('hover'));
+  const slot = findSlotUnder(e.clientX, e.clientY);
+  if (slot) slot.classList.add('hover');
+}
+
+function findSlotUnder(x, y) {
+  const els = document.elementsFromPoint(x, y);
+  return els.find(el => el.classList && el.classList.contains('puzzle-slot'));
+}
+
+function onPiecePointerUp(e) {
+  const d = puzzleState.drag;
+  if (!d) return;
+  document.removeEventListener('pointermove', onPiecePointerMove);
+  document.removeEventListener('pointerup', onPiecePointerUp);
+  document.removeEventListener('pointercancel', onPiecePointerUp);
+
+  const slot = findSlotUnder(e.clientX, e.clientY);
+  document.querySelectorAll('.puzzle-slot.hover').forEach(s => s.classList.remove('hover'));
+  d.ghost.remove();
+  d.origEl.style.opacity = '';
+
+  const tray = document.getElementById('puzzle-tray');
+  const droppedOnTray = tray.contains(document.elementFromPoint(e.clientX, e.clientY));
+
+  if (slot) {
+    const targetSlotIdx = +slot.dataset.slotIdx;
+    const existingPieceInTarget = puzzleState.placements[targetSlotIdx];
+
+    if (d.fromSlot !== null) {
+      // Moving from one slot to another (swap if occupied)
+      puzzleState.placements[d.fromSlot] = existingPieceInTarget;
+      puzzleState.placements[targetSlotIdx] = d.pieceId;
+    } else {
+      // From tray to slot
+      if (existingPieceInTarget !== null) {
+        // Bump existing piece back to tray
+        puzzleState.trayPieces.push(existingPieceInTarget);
+      }
+      // Remove this piece from tray
+      puzzleState.trayPieces = puzzleState.trayPieces.filter(p => p !== d.pieceId);
+      puzzleState.placements[targetSlotIdx] = d.pieceId;
+    }
+  } else if (droppedOnTray && d.fromSlot !== null) {
+    // Returning a placed piece to the tray
+    puzzleState.placements[d.fromSlot] = null;
+    puzzleState.trayPieces.push(d.pieceId);
+  }
+  // else: dropped in nowhere — snap back (no state change)
+
+  puzzleState.drag = null;
+  renderPuzzle();
+  checkPuzzleWin();
 }
 
 function checkPuzzleWin() {
-  if (puzzleState.tiles.every((v, i) => v === i)) {
+  const solved = puzzleState.placements.every((p, i) => p === i);
+  if (solved) {
     document.getElementById('puzzle-win').innerHTML = '<div class="win-message">🎉 Solved! 🎉</div>';
+    // Mark all as correct (removes borders)
+    document.querySelectorAll('.puzzle-piece.placed').forEach(p => p.classList.add('correct'));
   }
-}
-
-function shufflePuzzle() {
-  document.getElementById('puzzle-win').innerHTML = '';
-  const n = puzzleState.size;
-  // Do random valid moves to guarantee solvable
-  for (let i = 0; i < n*n*20; i++) {
-    const empty = puzzleState.emptyIdx;
-    const er = Math.floor(empty/n), ec = empty%n;
-    const moves = [];
-    if (er > 0) moves.push(empty - n);
-    if (er < n-1) moves.push(empty + n);
-    if (ec > 0) moves.push(empty - 1);
-    if (ec < n-1) moves.push(empty + 1);
-    const next = moves[Math.floor(Math.random()*moves.length)];
-    [puzzleState.tiles[empty], puzzleState.tiles[next]] = [puzzleState.tiles[next], puzzleState.tiles[empty]];
-    puzzleState.emptyIdx = next;
-  }
-  renderPuzzle();
 }
 
 /* ============ TAP GAME ============ */
-const TAP_EMOJIS = ['🐰','🐭','🐹','🐶','🐱','🐸','🐵','🐧','🦆','🐢'];
-let tapState = { score: 0, timer: null, spawnTimer: null };
+const TAP_EMOJIS = ['🍎','🍌','🍓','🍊','🍇','🍉','🍑','🥕','🌽','🥦','🍅','🍍','🥝','🥑','🫐','🥔','🍆','🌶️','🥬','🍒'];
+const TAP_START_TIME = 2000; // ms to tap the first target
+const TAP_MIN_TIME = 400;    // floor: never faster than this
+const TAP_SPEEDUP = 0.95;    // multiply window by this every 10 hits
+
+function showTapReady() {
+  stopTapGame();
+  loadTapBest();
+  document.getElementById('tap-score').textContent = 0;
+  document.getElementById('tap-timer-bar').style.width = '100%';
+  document.getElementById('tap-overlay-title').textContent = 'Ready?';
+  document.getElementById('tap-final-score').textContent = 'Tap fruits before time runs out!';
+  document.getElementById('tap-new-high').style.display = 'none';
+  document.getElementById('tap-name-input').style.display = 'none';
+  document.getElementById('tap-save-btn').style.display = 'none';
+  renderLeaderboard();
+  document.getElementById('tap-overlay').style.display = 'flex';
+}
+
+
+let tapState = {
+  score: 0,
+  best: 0,
+  active: false,
+  currentTarget: null,
+  windowMs: TAP_START_TIME,
+  startedAt: 0,
+  rafId: null,
+  loseTimer: null,
+};
+
+function loadTapBest() {
+  tapState.best = parseInt(localStorage.getItem('corn-tap-best') || '0', 10);
+  document.getElementById('tap-best').textContent = tapState.best;
+}
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem('corn-tap-leaderboard') || '[]');
+  } catch { return []; }
+}
+
+function saveLeaderboard(lb) {
+  localStorage.setItem('corn-tap-leaderboard', JSON.stringify(lb));
+}
+
+function renderLeaderboard(highlightIdx = -1) {
+  const lb = getLeaderboard();
+  const el = document.getElementById('tap-leaderboard');
+  if (lb.length === 0) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = 'block';
+  let html = '<h3>🏆 Top Scores</h3>';
+  lb.slice(0, 5).forEach((entry, i) => {
+    const youCls = i === highlightIdx ? ' you' : '';
+    html += `<div class="leaderboard-row${youCls}">
+      <span class="leaderboard-rank">${i+1}.</span>
+      <span class="leaderboard-name">${escapeHtml(entry.name)}</span>
+      <span class="leaderboard-score">${entry.score}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function startTapGame() {
-  stopTapGame();
+  loadTapBest();
   tapState.score = 0;
+  tapState.active = true;
+  tapState.windowMs = TAP_START_TIME;
   document.getElementById('tap-score').textContent = 0;
   const arena = document.getElementById('tap-arena');
   arena.querySelectorAll('.tap-target').forEach(t => t.remove());
+  document.getElementById('tap-overlay').style.display = 'none';
   spawnTapTarget();
-  tapState.spawnTimer = setInterval(spawnTapTarget, 900);
 }
 
 function stopTapGame() {
-  if (tapState.spawnTimer) clearInterval(tapState.spawnTimer);
-  tapState.spawnTimer = null;
+  tapState.active = false;
+  if (tapState.rafId) cancelAnimationFrame(tapState.rafId);
+  if (tapState.loseTimer) clearTimeout(tapState.loseTimer);
+  tapState.rafId = null;
+  tapState.loseTimer = null;
+  if (tapState.currentTarget) tapState.currentTarget.remove();
+  tapState.currentTarget = null;
 }
 
 function spawnTapTarget() {
+  if (!tapState.active) return;
   const arena = document.getElementById('tap-arena');
   if (!arena.offsetWidth) return;
+
+  // Clear any existing target
+  if (tapState.currentTarget) tapState.currentTarget.remove();
+
   const target = document.createElement('div');
   target.className = 'tap-target';
   target.textContent = TAP_EMOJIS[Math.floor(Math.random()*TAP_EMOJIS.length)];
+  // Keep clear of timer bar and topbar
   const x = Math.random() * (arena.offsetWidth - 70);
-  const y = Math.random() * (arena.offsetHeight - 70);
+  const y = 50 + Math.random() * (arena.offsetHeight - 70 - 90);
   target.style.left = x + 'px';
   target.style.top = y + 'px';
-  target.onclick = () => {
-    tapState.score++;
-    document.getElementById('tap-score').textContent = tapState.score;
-    target.remove();
-  };
+  target.onclick = () => onTapHit();
   arena.appendChild(target);
-  setTimeout(() => target.remove(), 2000);
+  tapState.currentTarget = target;
+
+  // Start the countdown
+  tapState.startedAt = performance.now();
+  if (tapState.loseTimer) clearTimeout(tapState.loseTimer);
+  tapState.loseTimer = setTimeout(() => gameOver(), tapState.windowMs);
+  updateTimerBar();
+}
+
+function updateTimerBar() {
+  if (!tapState.active) return;
+  const elapsed = performance.now() - tapState.startedAt;
+  const pct = Math.max(0, 100 - (elapsed / tapState.windowMs) * 100);
+  document.getElementById('tap-timer-bar').style.width = pct + '%';
+  if (pct > 0) {
+    tapState.rafId = requestAnimationFrame(updateTimerBar);
+  }
+}
+
+function onTapHit() {
+  if (!tapState.active) return;
+  tapState.score++;
+  document.getElementById('tap-score').textContent = tapState.score;
+  // Speed up: shrink the window by 5% every 10 hits
+  if (tapState.score % 10 === 0) {
+    tapState.windowMs = Math.max(TAP_MIN_TIME, tapState.windowMs * TAP_SPEEDUP);
+  }
+  spawnTapTarget();
+}
+
+function gameOver() {
+  if (!tapState.active) return;
+  tapState.active = false;
+  if (tapState.rafId) cancelAnimationFrame(tapState.rafId);
+  if (tapState.currentTarget) tapState.currentTarget.remove();
+  document.getElementById('tap-timer-bar').style.width = '0%';
+
+  const finalScore = tapState.score;
+  const isHigh = finalScore > tapState.best;
+  if (isHigh) {
+    tapState.best = finalScore;
+    localStorage.setItem('corn-tap-best', String(finalScore));
+    document.getElementById('tap-best').textContent = finalScore;
+  }
+
+  // Check if score makes the top 5
+  const lb = getLeaderboard();
+  const qualifies = finalScore > 0 && (lb.length < 5 || finalScore > lb[lb.length-1].score);
+
+  document.getElementById('tap-overlay-title').textContent = 'Game Over!';
+  document.getElementById('tap-final-score').textContent = `You scored ${finalScore}`;
+  document.getElementById('tap-new-high').style.display = isHigh && finalScore > 0 ? 'block' : 'none';
+
+  const nameInput = document.getElementById('tap-name-input');
+  const saveBtn = document.getElementById('tap-save-btn');
+
+  if (qualifies) {
+    nameInput.style.display = 'block';
+    nameInput.value = localStorage.getItem('corn-tap-lastname') || '';
+    saveBtn.style.display = 'inline-block';
+    renderLeaderboard();
+  } else {
+    nameInput.style.display = 'none';
+    saveBtn.style.display = 'none';
+    renderLeaderboard();
+  }
+
+  document.getElementById('tap-overlay').style.display = 'flex';
+}
+
+function saveTapScore() {
+  const name = (document.getElementById('tap-name-input').value || 'Player').trim().slice(0, 12);
+  localStorage.setItem('corn-tap-lastname', name);
+  const lb = getLeaderboard();
+  lb.push({ name, score: tapState.score, date: Date.now() });
+  lb.sort((a, b) => b.score - a.score);
+  const trimmed = lb.slice(0, 5);
+  saveLeaderboard(trimmed);
+  const myIdx = trimmed.findIndex(e => e.score === tapState.score && e.name === name);
+  document.getElementById('tap-name-input').style.display = 'none';
+  document.getElementById('tap-save-btn').style.display = 'none';
+  renderLeaderboard(myIdx);
 }
 
 /* ============ SERVICE WORKER (offline) ============ */

@@ -1,5 +1,5 @@
 // Service worker - caches app for offline use
-const CACHE = 'corn-v1';
+const CACHE = 'corn-v5';
 const ASSETS = [
   './',
   './index.html',
